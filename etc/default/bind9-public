@@ -1,0 +1,5 @@
+
+# startup options for the server
+OPTIONS="-c /etc/bind/named-public.conf"
+NAMED_OPTIONS="-c /etc/bind/named-public.conf"
+RNDC_OPTIONS="-s 127.0.0.1"

@@ -1,0 +1,133 @@
+############################################
+# File: bind9@.service
+# Path: /etc/systemd/system
+#
+# An instantiation of bind9.service to support
+# bastion DNS hosting (multiple DNS servers on 
+# multi-home gateway)
+#
+# PORT number must be defined in /etc/default/bind
+#
+# This same PORT number must be declared in 'default-port' 
+#    statement of 'options' section in /etc/rndc.conf
+#
+# This same PORT number must be declared in 'listen-on' 
+#    statement of 'options' section.
+#
+# NAMED_OPTIONS string must be defined in /etc/default/bind
+#    NAMED_OPTIONS cannot replace '-u' or '-c' option of 
+#    named(8) for its hard-coded in this file as:
+#        '-u bind -c /etc/bind/named.conf'
+#    Useful examples: 
+#        NAMED_OPTIONS="-p 53 -s"  # open port 53/udp and write stats
+#        NAMED_OPTIONS="-d 63"   # turn on various debug bit flags
+#
+# RNDC_OPTIONS string must be defined in /etc/default/bind
+#    Secured Example: RNDC_OPTIONS="-p 953 -s 127.0.0.1"
+#
+# References:
+#   * https://bind9-users.isc.narkive.com/qECPVuuu/enable-systemd-hardening-options-for-named
+#
+#
+#
+[Unit]
+Description=ISC BIND9 Domain Name Server
+Documentation=https://github.com/egberts/systemd-bind9/wiki
+Documentation=https://bind9.readthedocs.io/
+Documentation=man:named(8)
+After=network.target
+Wants=nss-lookup.target
+Before=nss-lookup.target
+AssertFileIsExecutable=/usr/sbin/named
+AssertFileIsExecutable=/usr/sbin/rndc
+ConditionPathExists=/run/bind
+ConditionPathIsDirectory=/run/bind
+ConditionPathIsReadWrite=/run/bind
+ConditionPathExists=/var/cache/bind
+ConditionPathIsDirectory=/var/cache/bind
+ConditionPathIsReadWrite=/var/cache/bind
+ConditionPathExists=/var/lib/bind
+ConditionPathIsDirectory=/var/lib/bind
+ConditionPathIsReadWrite=/var/lib/bind
+
+[Service]
+Type=forking
+
+# resources
+###LimitNPROC=10
+DeviceAllow=/dev/random r
+DeviceAllow=/dev/urandom r
+DeviceAllow=/dev/poll rw
+
+# global bind9 is optional
+EnvironmentFile=-/etc/default/bind9
+# identifier-specific Bind environment file is required
+EnvironmentFile=/etc/default/bind9
+
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_SETGID CAP_SETUID CAP_SYS_CHROOT CAP_DAC_OVERRIDE
+# File Security settings
+NoNewPrivileges=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+# bind:bind
+UMask=0007
+LogsDirectoryMode=0027
+LogsDirectory=/var/log/named
+# root:bind
+ConfigurationDirectoryMode=2022
+
+# **
+# Tmpfiles
+PrivateTmp=/run/bind
+RuntimeDirectory=/run/bind
+# root:bind
+RuntimeDirectoryMode=0007
+
+# Home directory
+# bind:bind
+WorkingDirectory=/var/cache/bind
+
+# systemd v251
+# CacheDirectory=/var/cache/bind
+# CacheDirectoryMode=0022
+
+# State directory (Bind9 database files, static/dynamic)
+# bind:bind
+StateDirectory=/var/lib/bind
+StateDirectoryMode=0027
+
+PIDfile=/run/named/named.pid
+ExecStart=/usr/sbin/named -u bind -f -c /etc/bind/named.conf $NAMED_OPTIONS
+
+# rndc will dovetail any and all instantiations of 
+# Bind9 `named` daemons into a single rndc.conf file
+# and use its `-s <server>` as a reference from 
+# this rndc.conf config file.
+ExecReload=/usr/sbin/rndc $RNDC_OPTIONS reload
+ExecStop=/usr/sbin/rndc $RNDC_OPTIONS stop
+
+KillMode=process
+RestartSec=5s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+# Additional settings identified from varous ISC bind9-users
+# PrivateDevices=true
+# PrivateTmp=true
+# ProtectHome=true
+# ProtectSystem=strict
+# ProtectKernelModules=true
+# ProtectKernelTunables=true
+# ProtectControlGroups=true
+# InaccessiblePaths=/home
+# InaccessiblePaths=/opt
+# InaccessiblePaths=/root
+# ReadWritePaths=/run/named
+# ReadWritePaths=/var/cache/bind
+# ReadWritePaths=/var/lib/bind

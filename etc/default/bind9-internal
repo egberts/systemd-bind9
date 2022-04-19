@@ -1,0 +1,6 @@
+# run resolvconf?
+RESOLVCONF=no
+
+# startup options for the server
+# OPTIONS="-u bind -d 4095"
+OPTIONS="-u bind -c /etc/bind/named-internal.conf"
