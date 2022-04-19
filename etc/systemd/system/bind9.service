@@ -32,7 +32,7 @@
 #
 [Unit]
 Description=ISC BIND9 Domain Name Server
-Documentation=https://github.com/egberts/systemd-bind9/wiki
+Documentation=https://github.com/egberts/systemd-bind9
 Documentation=https://bind9.readthedocs.io/
 Documentation=man:named(8)
 After=network.target
@@ -117,17 +117,29 @@ WantedBy=multi-user.target
 
 
 
-# Additional settings identified from varous ISC bind9-users
-# PrivateDevices=true
-# PrivateTmp=true
-# ProtectHome=true
-# ProtectSystem=strict
-# ProtectKernelModules=true
-# ProtectKernelTunables=true
-# ProtectControlGroups=true
+# Additional settings mentioned but not tested from 
+#   various Linux distros and ISC bind9-users
+# CapabilityBoundingSet=CAP_SYS_RESOURCE
+# IgnoreSIGPIPE=false
 # InaccessiblePaths=/home
 # InaccessiblePaths=/opt
 # InaccessiblePaths=/root
-# ReadWritePaths=/run/named
+# LockPersonality=yes
+# PermissionsStartOnly=True  
+# PrivateDevices=true
+# PrivateMounts=yes
+# PrivateTmp=true
+# ProtectControlGroups=true
+# ProtectKernelLogs=yes
+# ProtectSystem=strict
+# ReadWritePaths=/run/named /var/run/named
 # ReadWritePaths=/var/cache/bind
 # ReadWritePaths=/var/lib/bind
+# RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+# RestrictRealtime=yes
+# RestartPreventExitStatus=255
+# RuntimeDirectory=named
+# RuntimeDirectoryMode=0755
+# SystemCallArchitectures=native
+# Type=notify
+
