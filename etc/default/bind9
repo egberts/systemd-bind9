@@ -1,0 +1,23 @@
+#
+# File: bind
+# Path: /etc/default
+# Title: OS-specific settings for Bind9 systemd-unit/service
+#
+#
+# run resolvconf?  (legacy sysV initrd)
+RESOLVCONF=no
+
+# default settings for startup options  of 'bind9'
+#
+# NAMED_PIDFILE="/run/bind/named.pid"
+#
+# NAMED_CONF="/etc/bind/named.conf"
+#
+# NAMED_OPTIONS="-c $NAMED_CONF"
+# NAMED_CHECKCONF_OPTIONS="-z $NAMED_CONF"
+# RNDC_OPTIONS="-c /etc/bind/rndc.conf -p 953 -s localhost"
+#
+RNDC_BIN="/usr/local/sbin/rndc"
+NAMED_BIN="/usr/local/sbin/named"
+NAMED_CHECKCONF_BIN="/usr/local/sbin/named-checkconf"
+

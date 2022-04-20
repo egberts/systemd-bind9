@@ -38,17 +38,18 @@ Documentation=man:named(8)
 After=network.target
 Wants=nss-lookup.target
 Before=nss-lookup.target
-AssertFileIsExecutable=/usr/sbin/named
-AssertFileIsExecutable=/usr/sbin/rndc
-ConditionPathExists=/run/bind
-ConditionPathIsDirectory=/run/bind
-ConditionPathIsReadWrite=/run/bind
-ConditionPathExists=/var/cache/bind
-ConditionPathIsDirectory=/var/cache/bind
-ConditionPathIsReadWrite=/var/cache/bind
-ConditionPathExists=/var/lib/bind
+# AssertFileIsExecutable=/usr/sbin/named
+# AssertFileIsExecutable=/usr/sbin/rndc
+# ConditionPathExists=/run/bind
+# ConditionPathIsDirectory=/run/bind
+# ConditionPathIsReadWrite=/run/bind
+# ConditionPathExists=/var/cache/bind
+# ConditionPathIsDirectory=/var/cache/bind
+# ConditionPathIsReadWrite=/var/cache/bind
+# ConditionPathExists=/var/lib/bind
 ConditionPathIsDirectory=/var/lib/bind
 ConditionPathIsReadWrite=/var/lib/bind
+#ReadWritePaths=/var/lib/bind
 
 [Service]
 Type=forking
@@ -57,14 +58,41 @@ Type=forking
 ###LimitNPROC=10
 DeviceAllow=/dev/random r
 DeviceAllow=/dev/urandom r
-DeviceAllow=/dev/poll rw
+InaccessiblePaths=/home
+InaccessiblePaths=/opt
+InaccessiblePaths=/root
 
 # global bind9 is optional
+Environment="NAMED_PIDFILE=/run/bind/named.pid"
+Environment="NAMED_CONF=/etc/bind/named.conf"
+Environment="NAMED_OPTIONS=-c $NAMED_CONF"
+Environment="RNDC_OPTIONS=-c $NAMED_CONF -p 953 -s localhost"
+
+Environment="RNDC_BIN=/usr/sbin/rndc"
+Environment="NAMED_BIN=/usr/sbin/named"
+Environment="NAMED_CHECKCONF_BIN=/usr/sbin/named-checkconf"
+
 EnvironmentFile=-/etc/default/bind9
 # identifier-specific Bind environment file is required
 EnvironmentFile=/etc/default/bind9
 
-CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_SETGID CAP_SETUID CAP_SYS_CHROOT CAP_DAC_OVERRIDE
+# Far much easier to peel away additional capabilities after
+# getting a bare-minimum cap-set working
+# h.reindl at thelounge.net:
+CapabilityBoundingSet=CAP_CHOWN CAP_SETGID CAP_SETUID CAP_SYS_ADMIN CAP_DAC_OVERRIDE CAP_KILL CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_BROADCAST CAP_NET_RAW CAP_IPC_LOCK CAP_SYS_CHROOT 
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+# User/Group
+# If you set 'DynamicUser=true', MANY subdirectories will be created
+# under /var/cache, /var/log, /var/run; save yourself some pain, don't do that.
+# TO undo this accident, rm /var/[(log|run|cache)/(named|bind)
+# and restore via `mv /var/log/private/named /var/log/`
+# and restore via `mv /var/run/private/named /var/run/`
+# and restore via `mv /var/cache/private/named /var/cache/`
+DynamicUser=false
+User=bind
+Group=bind
+
 # File Security settings
 NoNewPrivileges=true
 ProtectHome=true
@@ -73,42 +101,47 @@ ProtectKernelTunables=true
 ProtectControlGroups=true
 # bind:bind
 UMask=0007
-LogsDirectoryMode=0027
-LogsDirectory=/var/log/named
-# root:bind
-ConfigurationDirectoryMode=2022
+LogsDirectoryMode=0750
+LogsDirectory=named
+ConfigurationDirectoryMode=0750
 
 # **
 # Tmpfiles
-PrivateTmp=/run/bind
-RuntimeDirectory=/run/bind
+PrivateTmp=false
+
+RuntimeDirectory=bind
 # root:bind
-RuntimeDirectoryMode=0007
+RuntimeDirectoryMode=0750
 
 # Home directory
 # bind:bind
 WorkingDirectory=/var/cache/bind
 
 # systemd v251
-# CacheDirectory=/var/cache/bind
-# CacheDirectoryMode=0022
+CacheDirectory=/var/cache/bind
+CacheDirectoryMode=0750
 
 # State directory (Bind9 database files, static/dynamic)
 # bind:bind
-StateDirectory=/var/lib/bind
-StateDirectoryMode=0027
+StateDirectory=bind
+StateDirectoryMode=0750
 
-PIDfile=/run/named/named.pid
-ExecStart=/usr/sbin/named -u bind -f -c /etc/bind/named.conf $NAMED_OPTIONS
+PIDFile=/run/bind/named.pid
+ExecStartPre=/usr/local/sbin/named-checkconf -z /etc/bind/named.conf
+# ExecStart=/usr/sbin/named -u bind -f -c /etc/bind/named.conf 
+ExecStart=/usr/local/sbin/named -4 -u bind -c /etc/bind/named.conf 
 
 # rndc will dovetail any and all instantiations of 
 # Bind9 `named` daemons into a single rndc.conf file
 # and use its `-s <server>` as a reference from 
 # this rndc.conf config file.
-ExecReload=/usr/sbin/rndc $RNDC_OPTIONS reload
-ExecStop=/usr/sbin/rndc $RNDC_OPTIONS stop
+# ExecReload=/usr/sbin/rndc $RNDC_OPTIONS reload
+# ExecStop=/usr/sbin/rndc $RNDC_OPTIONS stop
+ExecReload=/usr/local/sbin/rndc $RNDC_OPTIONS reload
+ExecStop=/usr/local/sbin/rndc $RNDC_OPTIONS stop
+# /bin/sh -c /usr/sbin/rndc stop > /dev/null 2>&1 || /bin/kill -TERM $MAINPID 
 
-KillMode=process
+# KillMode=process
 RestartSec=5s
 Restart=on-failure
 
@@ -121,9 +154,6 @@ WantedBy=multi-user.target
 #   various Linux distros and ISC bind9-users
 # CapabilityBoundingSet=CAP_SYS_RESOURCE
 # IgnoreSIGPIPE=false
-# InaccessiblePaths=/home
-# InaccessiblePaths=/opt
-# InaccessiblePaths=/root
 # LockPersonality=yes
 # PermissionsStartOnly=True  
 # PrivateDevices=true
@@ -134,7 +164,6 @@ WantedBy=multi-user.target
 # ProtectSystem=strict
 # ReadWritePaths=/run/named /var/run/named
 # ReadWritePaths=/var/cache/bind
-# ReadWritePaths=/var/lib/bind
 # RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
 # RestrictRealtime=yes
 # RestartPreventExitStatus=255
