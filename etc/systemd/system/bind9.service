@@ -27,15 +27,15 @@ After=network.target
 Wants=nss-lookup.target
 Before=nss-lookup.target
 
-ConditionPathExists=/run/bind
-ConditionPathIsDirectory=/run/bind
-ConditionPathIsReadWrite=/run/bind
+# ConditionPathExists=/run/bind
+# ConditionPathIsDirectory=/run/bind
+# ConditionPathIsReadWrite=/run/bind
 
-ConditionPathExists=/var/cache/bind
-ConditionPathIsDirectory=/var/cache/bind
-ConditionPathIsReadWrite=/var/cache/bind
+# ConditionPathExists=/var/cache/bind
+# ConditionPathIsDirectory=/var/cache/bind
+# ConditionPathIsReadWrite=/var/cache/bind
 
-ConditionPathExists=/var/lib/bind
+# ConditionPathExists=/var/lib/bind
 ConditionPathIsDirectory=/var/lib/bind
 ConditionPathIsReadWrite=/var/lib/bind
 #ReadWritePaths=/var/lib/bind
@@ -51,16 +51,16 @@ InaccessiblePaths=/home
 InaccessiblePaths=/opt
 InaccessiblePaths=/root
 
-# global bind9 is optional
-Environment="NAMED_PIDFILE=/run/bind/named.pid"
-Environment="NAMED_CONF=/etc/bind/named.conf"
-Environment="NAMED_OPTIONS=-c $NAMED_CONF"
-Environment="RNDC_OPTIONS=-c $NAMED_CONF -p 953 -s localhost"
+Environment=NAMED_PIDFILE="/run/bind/named.pid"
+Environment=NAMED_CONF="/etc/bind/named.conf"
+Environment=NAMED_OPTIONS="-c $NAMED_CONF"
+Environment=RNDC_OPTIONS="-c $NAMED_CONF -p 953 -s localhost"
 
-Environment="RNDC_BIN=/usr/sbin/rndc"
-Environment="NAMED_BIN=/usr/sbin/named"
-Environment="NAMED_CHECKCONF_BIN=/usr/sbin/named-checkconf"
+Environment=RNDC_BIN="/usr/sbin/rndc"
+Environment=NAMED_BIN="/usr/sbin/named"
+Environment=NAMED_CHECKCONF_BIN="/usr/sbin/named-checkconf"
 
+# default bind9 (global) is optional
 EnvironmentFile=-/etc/default/bind9
 
 # Far much easier to peel away additional capabilities after
@@ -105,7 +105,7 @@ RuntimeDirectoryMode=0750
 WorkingDirectory=/var/cache/bind
 
 # systemd v251
-CacheDirectory=/var/cache/bind
+CacheDirectory=bind
 CacheDirectoryMode=0750
 
 # State directory (Bind9 database files, static/dynamic)
