@@ -27,13 +27,15 @@ After=network.target
 Wants=nss-lookup.target
 Before=nss-lookup.target
 
-# ConditionPathExists=/run/bind
-# ConditionPathIsDirectory=/run/bind
-# ConditionPathIsReadWrite=/run/bind
-# ConditionPathExists=/var/cache/bind
-# ConditionPathIsDirectory=/var/cache/bind
-# ConditionPathIsReadWrite=/var/cache/bind
-# ConditionPathExists=/var/lib/bind
+ConditionPathExists=/run/bind
+ConditionPathIsDirectory=/run/bind
+ConditionPathIsReadWrite=/run/bind
+
+ConditionPathExists=/var/cache/bind
+ConditionPathIsDirectory=/var/cache/bind
+ConditionPathIsReadWrite=/var/cache/bind
+
+ConditionPathExists=/var/lib/bind
 ConditionPathIsDirectory=/var/lib/bind
 ConditionPathIsReadWrite=/var/lib/bind
 #ReadWritePaths=/var/lib/bind
