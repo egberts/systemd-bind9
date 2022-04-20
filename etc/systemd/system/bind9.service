@@ -1,18 +1,6 @@
 ############################################
-# File: bind9@.service
+# File: bind9.service
 # Path: /etc/systemd/system
-#
-# An instantiation of bind9.service to support
-# bastion DNS hosting (multiple DNS servers on 
-# multi-home gateway)
-#
-# PORT number must be defined in /etc/default/bind
-#
-# This same PORT number must be declared in 'default-port' 
-#    statement of 'options' section in /etc/rndc.conf
-#
-# This same PORT number must be declared in 'listen-on' 
-#    statement of 'options' section.
 #
 # NAMED_OPTIONS string must be defined in /etc/default/bind
 #    NAMED_OPTIONS cannot replace '-u' or '-c' option of 
@@ -38,8 +26,7 @@ Documentation=man:named(8)
 After=network.target
 Wants=nss-lookup.target
 Before=nss-lookup.target
-# AssertFileIsExecutable=/usr/sbin/named
-# AssertFileIsExecutable=/usr/sbin/rndc
+
 # ConditionPathExists=/run/bind
 # ConditionPathIsDirectory=/run/bind
 # ConditionPathIsReadWrite=/run/bind
@@ -73,8 +60,6 @@ Environment="NAMED_BIN=/usr/sbin/named"
 Environment="NAMED_CHECKCONF_BIN=/usr/sbin/named-checkconf"
 
 EnvironmentFile=-/etc/default/bind9
-# identifier-specific Bind environment file is required
-EnvironmentFile=/etc/default/bind9
 
 # Far much easier to peel away additional capabilities after
 # getting a bare-minimum cap-set working
