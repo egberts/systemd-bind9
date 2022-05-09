@@ -1,7 +1,9 @@
 #
-# File: named@.service
-# Path: 
+# File: bind9@.service
+# Path: /etc/systemd/system
 # Title: ISC Bind9 named daemon systemd unit
+# Systemd version: v247.3-7
+# Sysmted-analyze security: 7.0 MEDIUM
 # Creator: 512-dns-bind9-systemd.sh
 # Created on: Fri Apr 22 11:55:05 AM EDT 2022
 # Description:
