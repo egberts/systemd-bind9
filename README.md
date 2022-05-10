@@ -1,5 +1,9 @@
 # systemd-bind9
 
+Now reports:
+
+    Overall exposure level for named@test-instance.service: 4.9 OK 🙂
+
 Prototyping the [systemd](https://github.com/systemd/systemd) unit service file
 for [ISC Bind9](https://www.isc.org/bind/).
 
